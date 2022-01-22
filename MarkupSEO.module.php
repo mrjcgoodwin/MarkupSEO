@@ -244,7 +244,9 @@ class MarkupSEO extends WireData implements Module, ConfigurableModule {
 
         foreach($pageData as $fieldKey => $fieldValue) {
             // if the field has content we can continue
-            if($fieldValue != '') continue;
+            // Prevent canonical url being inherited as it should always default to current page URL not parent (@mrjcgoodwin)
+			if($fieldValue != '' || $fieldKey == 'canonical') continue;
+            
             // otherwise we try to add default content
             if($configData['useParents']) {
                 // use parent data
@@ -364,6 +366,14 @@ class MarkupSEO extends WireData implements Module, ConfigurableModule {
             }
 
         }
+
+        //Handle relative canonical URLs (@mrjcgoodwin)
+		//Use substr not str_starts_with to provide PHP 7 compatibility
+		$canonicalStartsWith = substr( $pageData['canonical'], 0, 4 ) === "http";
+
+		if($canonicalStartsWith != 'http') {
+			$pageData['canonical'] = wire('pages')->get('/')->httpUrl.$pageData['canonical'];
+		}
 
         if($configData['includeOpenGraph']) {
              // TODO: Add more options
@@ -1254,7 +1264,8 @@ class MarkupSEO extends WireData implements Module, ConfigurableModule {
             $field->type = $this->wire('modules')->get("FieldtypeText");
             $field->name = "seo_canonical";
             $field->label = $this->_("Canonical Link");
-            $field->notes = $this->_('The URL should include "http://...".');
+            $field->description = $this->_("If left blank, canonical will default to current page URL.");
+            $field->notes = $this->_('The URL should include "http://..." or you can use relative URLs for internal links. E.g. "foo/bar". (Omit proceeding "/").');
             $field->tags = 'seo';
             $field->save();
         }
