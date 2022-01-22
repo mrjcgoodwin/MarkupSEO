@@ -244,7 +244,9 @@ class MarkupSEO extends WireData implements Module, ConfigurableModule {
 
         foreach($pageData as $fieldKey => $fieldValue) {
             // if the field has content we can continue
-            if($fieldValue != '') continue;
+            // Prevent canonical url being inherited as it should always default to current page URL not parent (@mrjcgoodwin)
+			if($fieldValue != '' || $fieldKey == 'canonical') continue;
+            
             // otherwise we try to add default content
             if($configData['useParents']) {
                 // use parent data
