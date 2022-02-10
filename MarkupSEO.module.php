@@ -1351,4 +1351,23 @@ class MarkupSEO extends WireData implements Module, ConfigurableModule {
         }
 
     }
+
+    public function ___upgrade($fromVersion) {
+
+        $fields = $this->wire('fields');
+
+        //Upgrade path from original Nico Knoll version @mrjcgoodwin
+        if ($fromVersion == '0.8.7') {
+            $upgrade = $this->___install();
+
+            if($fields->get('seo_canonical')) {
+                $field = $fields->get('seo_canonical');
+                $field->description = $this->_("If left blank, canonical will default to current page URL.");
+                $field->notes = $this->_('The URL should include "http://..." or you can use relative URLs for internal links. E.g. "foo/bar". (Omit proceeding "/").');
+                $field->save();
+            }          
+
+        }
+        
+    }
 }
